@@ -1,0 +1,23 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Deploy: Render dashboard → New → Blueprint → vyber tento repo.
+# Secrets (sync: false) doplň v dashboarde po vytvorení služby.
+services:
+  - type: web
+    name: dev-command-center
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /login
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false
