@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dev-Command Center
 
-## Getting Started
+AI Roadmap & Git Changelog Automator — interný admin nástroj. Next.js (App Router) + Turso (libsql/Drizzle) + GitHub API.
 
-First, run the development server:
+## Funkcie (MVP)
+
+- **Dashboard** — zoznam roadmap úloh so statusom (`todo` / `in_progress` / `blocked` / `done`) a % progresu.
+- **Roadblock workflow** — označ úlohu ako `blocked` a napíš konkrétny roadblock.
+- **Fetch GitHub & Sync** — stiahne commity za posledných 7 dní pre repo projektu a zobrazí ich vedľa roadmapy.
+- **Auth** — jednoduchý zdieľaný `ADMIN_TOKEN` (httpOnly cookie); chráni všetky write akcie.
+
+## Lokálny setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # vyplň hodnoty (PowerShell: copy .env.example .env.local)
+npm run db:push              # vytvorí tabuľky v Turso
+npm run db:seed              # (voliteľné) 1 projekt + 3 ukážkové items
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Env premenné (`.env.local`)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Kľúč | Zdroj |
+|---|---|
+| `TURSO_DATABASE_URL` | `turso db show <db> --url` |
+| `TURSO_AUTH_TOKEN` | `turso db tokens create <db>` |
+| `GITHUB_TOKEN` | GitHub PAT, `repo` read scope |
+| `ADMIN_TOKEN` | ľubovoľný silný string — zadáva sa na `/login` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Štruktúra
 
-## Learn More
+```
+src/
+├─ db/        schema.ts (3 tabuľky), index.ts (lazy libsql klient), seed.ts
+├─ lib/       github.ts (fetchRecentCommits), auth.ts (requireAdmin)
+└─ app/
+   ├─ login/      ADMIN_TOKEN → cookie
+   └─ dashboard/  page.tsx, actions.ts (Server Actions), _components/
+```
 
-To learn more about Next.js, take a look at the following resources:
+Read: server components čítajú `db` priamo. Write: výhradne cez Server Actions v `dashboard/actions.ts`, každá volá `requireAdmin()`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy na Render (Free tier)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Push repo na GitHub, v Render: **New → Web Service**, vyber repo.
+2. Environment: **Node**. Build: `npm install && npm run build`. Start: `npm start`.
+3. Pridaj env premenné (rovnaké 4 kľúče ako `.env.local`).
+4. `output: 'standalone'` v `next.config.ts` znižuje veľkosť image.
+5. Tabuľky v produkčnej Turso DB nasaď cez `npm run db:push` proti produkčnému `TURSO_DATABASE_URL`.
 
-## Deploy on Vercel
+> Free tier uspí službu po nečinnosti (cold start ~30s). Turso je externé — dáta persistujú nezávisle.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Mimo scope (zatiaľ)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+AI generovanie changelogu (tabuľka `weekly_changelogs` je pripravená), multi-user auth, GitHub webhooky, pagination commitov nad 100.
