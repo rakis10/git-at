@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
+import { ADMIN_COOKIE } from './constants';
 
-export const ADMIN_COOKIE = 'admin_token';
+export { ADMIN_COOKIE };
 
 /** True ak má request platnú admin cookie. */
 export async function isAdmin(): Promise<boolean> {

@@ -1,4 +1,4 @@
-import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 export const projects = sqliteTable('projects', {
@@ -40,6 +40,26 @@ export const weeklyChangelogs = sqliteTable('weekly_changelogs', {
     .default(sql`(unixepoch())`),
 });
 
+export const commits = sqliteTable(
+  'commits',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    projectId: integer('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    sha: text('sha').notNull(), // 7-char prefix
+    message: text('message').notNull(),
+    author: text('author').notNull(),
+    committedAt: text('committed_at'), // ISO dátum z GitHubu
+    url: text('url').notNull(),
+    syncedAt: integer('synced_at', { mode: 'timestamp' })
+      .notNull()
+      .default(sql`(unixepoch())`),
+  },
+  (t) => [uniqueIndex('commits_project_sha').on(t.projectId, t.sha)],
+);
+
 export type Project = typeof projects.$inferSelect;
 export type RoadmapItem = typeof roadmapItems.$inferSelect;
 export type WeeklyChangelog = typeof weeklyChangelogs.$inferSelect;
+export type Commit = typeof commits.$inferSelect;

@@ -18,8 +18,8 @@ Stav k 2026-06-16. MVP nasadený na Render (Turso DB, GitHub sync, ADMIN_TOKEN a
 | P0 | **AI Weekly Changelog** — commity + roadmap → Nemotron 3 Ultra (NVIDIA) → markdown do `weekly_changelogs` | 🔨 in progress |
 | P1 | **Roadmap item edit + delete** | ✅ done |
 | P1 | **Changelog história + export (.md / copy)** | ✅ done |
-| P2 | Persist synced commits (commits tabuľka) | todo |
-| P2 | Auth middleware (gate `/dashboard` centrálne) | todo |
+| P2 | **Persist synced commits (commits tabuľka)** | ✅ done |
+| P2 | **Auth gate cez Proxy (Next 16, býv. middleware)** | ✅ done |
 | P2 | Per-projekt filter, progress rollup, loading/error UX | todo |
 
 ## Mimo scope (zatiaľ)

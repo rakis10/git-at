@@ -1,12 +1,13 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { eq } from 'drizzle-orm';
+import { eq, count } from 'drizzle-orm';
 import { db } from '@/db';
 import {
   roadmapItems,
   projects,
   weeklyChangelogs,
+  commits,
   ROADMAP_STATUSES,
   type RoadmapStatus,
 } from '@/db/schema';
@@ -116,14 +117,45 @@ export async function deleteRoadmapItem(formData: FormData) {
   revalidatePath('/dashboard');
 }
 
-/** "Fetch GitHub & Sync" — vytiahne commity za 7 dní pre projekt. Vracia ich do UI. */
-export async function fetchAndSyncCommits(projectId: number): Promise<CommitSummary[]> {
+export interface SyncResult {
+  commits: CommitSummary[];
+  storedTotal: number; // koľko commitov projektu je uložených v DB po syncu
+}
+
+/**
+ * "Fetch GitHub & Sync" — vytiahne commity za 7 dní pre projekt, uloží ich do DB
+ * (upsert podľa unikátneho (project_id, sha)) a vráti ich do UI.
+ */
+export async function fetchAndSyncCommits(projectId: number): Promise<SyncResult> {
   await requireAdmin();
 
   const [proj] = await db.select().from(projects).where(eq(projects.id, projectId));
   if (!proj) throw new Error('projekt neexistuje');
 
-  return fetchRecentCommits(proj.githubRepo, 7);
+  const list = await fetchRecentCommits(proj.githubRepo, 7);
+
+  if (list.length) {
+    await db
+      .insert(commits)
+      .values(
+        list.map((c) => ({
+          projectId,
+          sha: c.sha,
+          message: c.message,
+          author: c.author,
+          committedAt: c.date || null,
+          url: c.url,
+        })),
+      )
+      .onConflictDoNothing();
+  }
+
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(commits)
+    .where(eq(commits.projectId, projectId));
+
+  return { commits: list, storedTotal: total };
 }
 
 // ---- Project CRUD ----

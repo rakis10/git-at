@@ -12,6 +12,7 @@ export function CommitsPanel({
   repo: string;
 }) {
   const [commits, setCommits] = useState<CommitSummary[] | null>(null);
+  const [storedTotal, setStoredTotal] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -19,7 +20,9 @@ export function CommitsPanel({
     setError(null);
     startTransition(async () => {
       try {
-        setCommits(await fetchAndSyncCommits(projectId));
+        const res = await fetchAndSyncCommits(projectId);
+        setCommits(res.commits);
+        setStoredTotal(res.storedTotal);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Chyba pri fetchi');
       }
@@ -37,7 +40,10 @@ export function CommitsPanel({
         {pending ? 'Sťahujem…' : 'Fetch GitHub & Sync'}
       </button>
 
-      <p className="text-xs text-zinc-400">{repo}</p>
+      <p className="text-xs text-zinc-400">
+        {repo}
+        {storedTotal != null && ` · ${storedTotal} uložených v DB`}
+      </p>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
