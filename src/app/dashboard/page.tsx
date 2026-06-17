@@ -5,7 +5,7 @@ import { projects as projectsTable, roadmapItems, weeklyChangelogs } from '@/db/
 import { isAdmin } from '@/lib/auth';
 import { logout } from '../login/actions';
 import { RoadmapItemForm } from './_components/RoadmapItemForm';
-import { RoadmapTable } from './_components/RoadmapTable';
+import { RoadmapSection } from './_components/RoadmapSection';
 import { ProjectForm } from './_components/ProjectForm';
 import { ProjectCard } from './_components/ProjectCard';
 import { type ChangelogEntry } from './actions';
@@ -55,11 +55,8 @@ export default async function DashboardPage() {
       {projects.length > 0 && <RoadmapItemForm projects={projects} />}
 
       <div className="grid gap-8 lg:grid-cols-[1fr_22rem]">
-        {/* Roadmap */}
-        <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">Roadmap</h2>
-          <RoadmapTable items={items} />
-        </section>
+        {/* Roadmap — filter + rollup */}
+        <RoadmapSection items={items} projects={projects} />
 
         {/* GitHub commity + changelog per projekt */}
         <aside className="flex flex-col gap-4">

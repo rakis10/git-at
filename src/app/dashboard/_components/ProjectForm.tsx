@@ -1,4 +1,5 @@
 import { createProject } from '../actions';
+import { SubmitButton } from './SubmitButton';
 
 export function ProjectForm() {
   return (
@@ -21,12 +22,9 @@ export function ProjectForm() {
           className="rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
         />
       </label>
-      <button
-        type="submit"
-        className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900"
-      >
+      <SubmitButton className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-white dark:text-zinc-900">
         + Projekt
-      </button>
+      </SubmitButton>
     </form>
   );
 }

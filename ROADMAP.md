@@ -20,7 +20,7 @@ Stav k 2026-06-16. MVP nasadený na Render (Turso DB, GitHub sync, ADMIN_TOKEN a
 | P1 | **Changelog história + export (.md / copy)** | ✅ done |
 | P2 | **Persist synced commits (commits tabuľka)** | ✅ done |
 | P2 | **Auth gate cez Proxy (Next 16, býv. middleware)** | ✅ done |
-| P2 | Per-projekt filter, progress rollup, loading/error UX | todo |
+| P2 | **Per-projekt filter, progress rollup, loading/error UX** | ✅ done |
 
 ## Mimo scope (zatiaľ)
 Multi-user auth, GitHub webhooky, pagination commitov nad 100, real-time updates.

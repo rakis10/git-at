@@ -1,5 +1,6 @@
 import { createRoadmapItem } from '../actions';
 import type { Project } from '@/db/schema';
+import { SubmitButton } from './SubmitButton';
 
 export function RoadmapItemForm({ projects }: { projects: Project[] }) {
   return (
@@ -53,12 +54,9 @@ export function RoadmapItemForm({ projects }: { projects: Project[] }) {
         />
       </label>
 
-      <button
-        type="submit"
-        className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-white dark:text-zinc-900"
-      >
+      <SubmitButton className="rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-white dark:text-zinc-900">
         + Pridať
-      </button>
+      </SubmitButton>
     </form>
   );
 }
