@@ -8,6 +8,7 @@ import { RoadmapItemForm } from './_components/RoadmapItemForm';
 import { RoadmapTable } from './_components/RoadmapTable';
 import { ProjectForm } from './_components/ProjectForm';
 import { ProjectCard } from './_components/ProjectCard';
+import { type ChangelogEntry } from './actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,10 +23,16 @@ export default async function DashboardPage() {
     db.select().from(weeklyChangelogs).orderBy(desc(weeklyChangelogs.createdAt)),
   ]);
 
-  // najnovší changelog per projekt (changelogs sú zoradené desc, prvý výskyt = najnovší)
-  const latestChangelog = new Map<number, (typeof changelogs)[number]>();
+  // changelogy zoskupené per projekt (zoradené desc → najnovší prvý), serializovateľné pre client
+  const changelogsByProject = new Map<number, ChangelogEntry[]>();
   for (const c of changelogs) {
-    if (!latestChangelog.has(c.projectId)) latestChangelog.set(c.projectId, c);
+    const arr = changelogsByProject.get(c.projectId) ?? [];
+    arr.push({
+      weekNumber: c.weekNumber,
+      markdown: c.generatedMarkdown,
+      createdAt: c.createdAt.toISOString(),
+    });
+    changelogsByProject.set(c.projectId, arr);
   }
 
   return (
@@ -62,17 +69,13 @@ export default async function DashboardPage() {
           {projects.length === 0 ? (
             <p className="text-sm text-zinc-500">Pridaj projekt vyššie.</p>
           ) : (
-            projects.map((p) => {
-              const cl = latestChangelog.get(p.id);
-              return (
-                <ProjectCard
-                  key={p.id}
-                  project={p}
-                  changelogMarkdown={cl?.generatedMarkdown ?? null}
-                  changelogWeek={cl?.weekNumber ?? null}
-                />
-              );
-            })
+            projects.map((p) => (
+              <ProjectCard
+                key={p.id}
+                project={p}
+                changelogHistory={changelogsByProject.get(p.id) ?? []}
+              />
+            ))
           )}
         </aside>
       </div>

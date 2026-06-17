@@ -2,18 +2,16 @@
 
 import { useState } from 'react';
 import type { Project } from '@/db/schema';
-import { updateProject, deleteProject } from '../actions';
+import { updateProject, deleteProject, type ChangelogEntry } from '../actions';
 import { CommitsPanel } from './CommitsPanel';
 import { ChangelogPanel } from './ChangelogPanel';
 
 export function ProjectCard({
   project,
-  changelogMarkdown,
-  changelogWeek,
+  changelogHistory,
 }: {
   project: Project;
-  changelogMarkdown: string | null;
-  changelogWeek: number | null;
+  changelogHistory: ChangelogEntry[];
 }) {
   const [editing, setEditing] = useState(false);
 
@@ -89,11 +87,7 @@ export function ProjectCard({
       )}
 
       <CommitsPanel projectId={project.id} repo={project.githubRepo} />
-      <ChangelogPanel
-        projectId={project.id}
-        initialMarkdown={changelogMarkdown}
-        initialWeek={changelogWeek}
-      />
+      <ChangelogPanel projectId={project.id} initialHistory={changelogHistory} />
     </div>
   );
 }

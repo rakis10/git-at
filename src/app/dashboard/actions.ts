@@ -91,6 +91,31 @@ export async function updateItemStatus(formData: FormData) {
   revalidatePath('/dashboard');
 }
 
+/** Edituje title + description roadmap itemu. Volané ako form action. */
+export async function updateRoadmapItem(formData: FormData) {
+  await requireAdmin();
+
+  const itemId = Number(formData.get('itemId'));
+  const title = String(formData.get('title') ?? '').trim();
+  const description = String(formData.get('description') ?? '').trim() || null;
+
+  if (!itemId || !title) throw new Error('itemId a title sú povinné');
+
+  await db.update(roadmapItems).set({ title, description }).where(eq(roadmapItems.id, itemId));
+  revalidatePath('/dashboard');
+}
+
+/** Zmaže roadmap item. Volané ako form action. */
+export async function deleteRoadmapItem(formData: FormData) {
+  await requireAdmin();
+
+  const itemId = Number(formData.get('itemId'));
+  if (!itemId) throw new Error('itemId je povinné');
+
+  await db.delete(roadmapItems).where(eq(roadmapItems.id, itemId));
+  revalidatePath('/dashboard');
+}
+
 /** "Fetch GitHub & Sync" — vytiahne commity za 7 dní pre projekt. Vracia ich do UI. */
 export async function fetchAndSyncCommits(projectId: number): Promise<CommitSummary[]> {
   await requireAdmin();
@@ -144,11 +169,17 @@ export async function deleteProject(formData: FormData) {
 
 // ---- AI Weekly Changelog ----
 
+export interface ChangelogEntry {
+  weekNumber: number;
+  markdown: string;
+  createdAt: string; // ISO
+}
+
 /**
  * Vygeneruje changelog pre projekt: commity (7 dní) + roadmap stav → Nemotron 3 Ultra (NVIDIA)
- * → uloží markdown do weekly_changelogs. Vracia vygenerovaný markdown.
+ * → uloží markdown do weekly_changelogs. Vracia vygenerovaný záznam.
  */
-export async function generateChangelog(projectId: number): Promise<string> {
+export async function generateChangelog(projectId: number): Promise<ChangelogEntry> {
   await requireAdmin();
 
   const [proj] = await db.select().from(projects).where(eq(projects.id, projectId));
@@ -168,12 +199,11 @@ export async function generateChangelog(projectId: number): Promise<string> {
     roadmap,
   });
 
-  await db.insert(weeklyChangelogs).values({
-    projectId,
-    weekNumber,
-    generatedMarkdown: markdown,
-  });
+  const [row] = await db
+    .insert(weeklyChangelogs)
+    .values({ projectId, weekNumber, generatedMarkdown: markdown })
+    .returning();
 
   revalidatePath('/dashboard');
-  return markdown;
+  return { weekNumber, markdown, createdAt: row.createdAt.toISOString() };
 }

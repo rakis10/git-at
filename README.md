@@ -49,6 +49,8 @@ Read: server components čítajú `db` priamo. Write: výhradne cez Server Actio
 4. `output: 'standalone'` v `next.config.ts` znižuje veľkosť image.
 5. Tabuľky v produkčnej Turso DB nasaď cez `npm run db:push` proti produkčnému `TURSO_DATABASE_URL`.
 
+https://dev-command-center.onrender.com
+
 > Free tier uspí službu po nečinnosti (cold start ~30s). Turso je externé — dáta persistujú nezávisle.
 
 ## Mimo scope (zatiaľ)
